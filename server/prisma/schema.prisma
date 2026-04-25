@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  username     String        @unique
+  contact      String        @unique
+  password     String
+  photo        String?
+  role         String        @default("user")
+  createdAt    DateTime      @default(now())
+  
+  // Relations
+  transactions Transaction[]
+  bookings     Booking[]
+}
+
+model Kost {
+  id           Int           @id @default(autoincrement())
+  name         String
+  type         String
+  loc          String
+  address      String
+  price        Float
+  img          String
+  images       Json
+  fac          Json
+  rating       Float         @default(0.0)
+  reviews      Int           @default(0)
+  verified     Boolean       @default(false)
+  promo        Boolean       @default(false)
+  promoPercent Int           @default(0)
+  available    Boolean       @default(true)
+  rooms        Int
+  description  String        @db.Text
+  owner        String
+  ownerPhone   String
+  ownerPhoto   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relations
+  transactions Transaction[]
+  bookings     Booking[]
+}
+
+model Transaction {
+  id                 String    @id @default(uuid())
+  transactionId      String    @unique
+  referenceNumber    String
+  invoiceNumber      String?
+  contractNumber     String?
+  timestamp          DateTime  @default(now())
+  
+  paymentOption      String
+  paymentOptionName  String
+  
+  baseAmount         Float
+  subtotal           Float
+  discount           Float
+  adminFee           Float
+  serviceFee         Float
+  totalAmount        Float
+  
+  amountPaid         Float     @default(0)
+  dpAmount           Float?
+  dpPercentage       Float?
+  remainingAmount    Float
+  installments       Json?
+  depositAmount      Float?
+  verificationCode   String?
+  
+  paymentMethod      String
+  paymentChannel     String
+  status             String
+  
+  // Scanned / Completed timestamps
+  qrScanned          Boolean   @default(false)
+  qrData             String?
+  qrValidatedAt      DateTime?
+  confirmedAt        DateTime?
+  completedAt        DateTime?
+  failedAt           DateTime?
+  failReason         String?
+  contractAccepted   Boolean   @default(false)
+  contractAcceptedAt DateTime?
+
+  metadata           Json?
+  
+  // Relations
+  userId             String
+  user               User      @relation(fields: [userId], references: [id])
+  kostId             Int
+  kost               Kost      @relation(fields: [kostId], references: [id])
+}
+
+model Booking {
+  id              String    @id @default(uuid())
+  createdAt       DateTime  @default(now())
+  status          String
+  
+  // User snapshot
+  userId          String
+  userName        String
+  username        String
+  contact         String
+  
+  // Kost snapshot
+  kostId          Int
+  kostName        String
+  kostAddress     String
+  loc             String
+  type            String
+  
+  months          Int
+  startDate       String
+  endDate         String
+  
+  paymentOption   String
+  payment         String
+  subtotal        Float
+  discount        Float
+  adminFee        Float
+  serviceFee      Float
+  total           Float
+  amountPaid      Float
+  remainingAmount Float
+  
+  transactionId   String?
+  invoiceNumber   String?
+  contractNumber  String?
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id])
+  kost            Kost      @relation(fields: [kostId], references: [id])
+}
